@@ -66,12 +66,12 @@
 
 	Plugin.prototype.next = function () {
 		this.index = (this.index + 1) % this.filtered.length;
-		this.hightlightItem();
+		this.hightlightItem(true);
 	};
 
 	Plugin.prototype.prev = function () {
 		this.index = (this.index + this.filtered.length - 1) % this.filtered.length;
-		this.hightlightItem();
+		this.hightlightItem(true);
 	};
 
 	Plugin.prototype.select = function () {
@@ -103,14 +103,17 @@
 		this.$element.setCursorPosition(val.length + 1);
 	};
 
-	Plugin.prototype.hightlightItem = function () {
+	Plugin.prototype.hightlightItem = function (scroll) {
 		this.$itemList.find(".-sew-list-item").removeClass("selected");
 
 		var container = this.$itemList.find(".-sew-list-item").parent();
 		var element = this.filtered[this.index].element.addClass("selected");
 
-		var scrollPosition = element.position().top;
-		container.scrollTop(container.scrollTop() + scrollPosition);
+		if(scroll){
+			container.scrollTop(container.scrollTop() + scrollPosition);
+			var scrollPosition = element.position().top;
+			container.scrollTop(container.scrollTop() + scrollPosition);
+		}
 	};
 
 	Plugin.prototype.renderElements = function (values) {
@@ -135,7 +138,7 @@
 		this.$itemList.show();
 		var element = this.$element;
 		var offset = this.$element.offset();
-		var pos = element.getCaretPosition();
+		var pos = getCaretCoordinates(element[0], element[0].selectionEnd);
 
 		this.$itemList.css({
 			left: offset.left + pos.left,
@@ -200,6 +203,7 @@
 	};
 
 	Plugin.prototype.onKeyUp = function (e) {
+		if(Plugin.KEYS.indexOf(e.keyCode) > -1) return;
 		var startpos = this.$element.getCursorPosition();
 		var val = this.getText().substring(0, startpos);
 		var matches = val.match(this.expression);
